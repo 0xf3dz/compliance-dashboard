@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # The runner has no host database, so the workflow starts its own. Port
+    # 5432 is free here; the docker-compose file uses 5544 on a workstation to
+    # avoid a clash with a local Postgres.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ironbark
+          POSTGRES_PASSWORD: ironbark
+          POSTGRES_DB: ironbark
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ironbark -d ironbark"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ironbark:ironbark@localhost:5432/ironbark
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: ingestion/requirements.txt
+
+      - name: Install python dependencies
+        run: pip install -r ingestion/requirements.txt
+
+      # Layer 1 unit tests need no database: they cover the pure cleaning
+      # functions, the detectors on hand-built frames, and the grounding guard.
+      - name: Run python tests
+        run: python -m pytest ingestion/tests -q
+
+      # The API integration tests read real rows, so the pipeline runs first.
+      - name: Load the CSVs into Postgres
+        run: python -m ingestion.ingest
+
+      # ingestion.ai.classify is deliberately absent. It calls a paid API, and a
+      # required secret would break this workflow for anyone who forks the
+      # repository. Layers 1, 2 and 4 prove themselves without a key; the AI
+      # panel shows its empty state and nothing is fabricated.
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            api/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install api dependencies
+        working-directory: api
+        run: npm ci
+
+      - name: Typecheck the api
+        working-directory: api
+        run: npm run typecheck
+
+      - name: Run api tests
+        working-directory: api
+        run: npm test
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build the frontend
+        working-directory: frontend
+        run: npm run build
