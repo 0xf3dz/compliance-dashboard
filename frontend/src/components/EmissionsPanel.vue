@@ -1,0 +1,121 @@
+<script setup lang="ts">
+import type { ChartData, ChartOptions } from "chart.js";
+import { computed } from "vue";
+import { Chart } from "vue-chartjs";
+import { api, type EmissionsSummary, type MonthlyEmissions } from "../api";
+import { useResource } from "../useResource";
+
+const monthly = useResource<MonthlyEmissions[]>(api.emissionsMonthly);
+const summary = useResource<EmissionsSummary>(api.emissionsSummary);
+
+const SCOPE1 = "#f0883e";
+// The same orange at low saturation. A month without a fuel invoice keeps its
+// place in the chart, and the muted bar says the value is a floor.
+const SCOPE1_INCOMPLETE = "#7a5233";
+
+function tonnes(kg: number): string {
+  return (kg / 1000).toLocaleString("en-AU", { maximumFractionDigits: 0 });
+}
+
+const incompleteMonths = computed(() =>
+  (monthly.data.value ?? []).filter((r) => !r.scope1_has_deliveries).map((r) => r.month),
+);
+
+const chartData = computed<ChartData<"bar" | "line">>(() => {
+  const rows = monthly.data.value ?? [];
+  return {
+    labels: rows.map((r) => (r.scope1_has_deliveries ? r.month : `${r.month} (incomplete)`)),
+    datasets: [
+      {
+        type: "bar",
+        label: "Scope 1 (fuel)",
+        data: rows.map((r) => Math.round(r.scope1_kg / 1000)),
+        backgroundColor: rows.map((r) => (r.scope1_has_deliveries ? SCOPE1 : SCOPE1_INCOMPLETE)),
+        stack: "emissions",
+      },
+      {
+        type: "bar",
+        label: "Scope 2 (electricity)",
+        data: rows.map((r) => Math.round(r.scope2_kg / 1000)),
+        backgroundColor: "#4d9de0",
+        stack: "emissions",
+      },
+      {
+        type: "line",
+        label: "Total",
+        data: rows.map((r) => Math.round(r.total_kg / 1000)),
+        borderColor: "#e6edf3",
+        backgroundColor: "#e6edf3",
+        tension: 0.3,
+        pointRadius: 2,
+      },
+    ],
+  };
+});
+
+const chartOptions: ChartOptions<"bar" | "line"> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: "index", intersect: false },
+  scales: {
+    x: { stacked: true, grid: { color: "#2c3742" }, ticks: { color: "#93a1b0" } },
+    y: {
+      stacked: true,
+      grid: { color: "#2c3742" },
+      ticks: { color: "#93a1b0" },
+      title: { display: true, text: "tCO₂e", color: "#93a1b0" },
+    },
+  },
+  plugins: { legend: { labels: { color: "#e6edf3" } } },
+};
+</script>
+
+<template>
+  <section class="panel">
+    <h2>Emissions</h2>
+    <p class="subtitle">Monthly Scope 1 and Scope 2, computed from cleaned activity data.</p>
+
+    <div v-if="summary.loading.value" class="state">Loading…</div>
+    <div v-else-if="summary.error.value" class="state error">
+      No data / API unavailable ({{ summary.error.value }}).
+    </div>
+    <template v-else-if="summary.data.value">
+      <div class="kpis">
+        <div class="kpi">
+          <div class="label">Total emissions</div>
+          <div class="value">{{ tonnes(summary.data.value.total_kg) }} t</div>
+          <div class="sub">CO₂e over {{ summary.data.value.months }} months</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Scope 1 — fuel</div>
+          <div class="value">{{ tonnes(summary.data.value.scope1_kg) }} t</div>
+          <div class="sub">{{ Math.round(summary.data.value.scope1_share * 100) }}% of total</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Scope 2 — electricity</div>
+          <div class="value">{{ tonnes(summary.data.value.scope2_kg) }} t</div>
+          <div class="sub">{{ Math.round(summary.data.value.scope2_share * 100) }}% of total</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <Chart type="bar" :data="chartData" :options="chartOptions" />
+      </div>
+
+      <p v-if="incompleteMonths.length" class="subtitle">
+        A muted Scope 1 bar and an <em>(incomplete)</em> label mark a month with no fuel invoice:
+        {{ incompleteMonths.join(", ") }}. Scope 1 for such a month is a lower bound, not zero.
+      </p>
+
+      <!-- Every caveat comes from the server, which builds it from
+           data_quality_issues. No month, meter or incident is named here. -->
+      <div v-if="summary.data.value.caveats.length" class="caveats">
+        <div v-for="c in summary.data.value.caveats" :key="c.code" class="caveat">
+          <span class="code">{{ c.code }}</span>
+          <span class="text">{{ c.message }}</span>
+          <span class="months">{{ c.months.join(", ") }}</span>
+        </div>
+      </div>
+    </template>
+  </section>
+</template>
