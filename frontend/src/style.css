@@ -1,0 +1,370 @@
+:root {
+  --bg: #0f1419;
+  --panel: #1a2129;
+  --panel-2: #232c37;
+  --border: #2c3742;
+  --text: #e6edf3;
+  --muted: #93a1b0;
+  --accent: #f0883e;
+  --scope1: #f0883e;
+  --scope2: #4d9de0;
+  --total: #e6edf3;
+  --flag: #e3b341;
+  --fixed: #3fb950;
+  --reject: #f85149;
+  --psycho: #d2a8ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+}
+
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.app-header {
+  margin-bottom: 20px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.app-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.panel .subtitle {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.kpi {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.kpi .label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi .value {
+  font-size: 24px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.kpi .sub {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 320px;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 800px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.callout {
+  background: rgba(240, 136, 62, 0.12);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.state {
+  padding: 28px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.state.error {
+  color: var(--reject);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.fixed {
+  background: rgba(63, 185, 80, 0.16);
+  color: var(--fixed);
+}
+
+.badge.flagged {
+  background: rgba(227, 179, 65, 0.16);
+  color: var(--flag);
+}
+
+.badge.rejected {
+  background: rgba(248, 81, 73, 0.16);
+  color: var(--reject);
+}
+
+.badge.psycho {
+  background: rgba(210, 168, 255, 0.16);
+  color: var(--psycho);
+}
+
+.badge.mismatch {
+  background: rgba(248, 81, 73, 0.16);
+  color: var(--reject);
+}
+
+.finding {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.finding .head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.finding .id {
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+}
+
+.finding .desc {
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.finding .desc mark {
+  background: rgba(240, 136, 62, 0.35);
+  color: var(--text);
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+.finding .rationale {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.section-title {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 18px 0 8px;
+}
+
+/* Caveat strip. One line per server-supplied limit on the emission figures.
+   The text comes from /api/emissions/summary, never from this application. */
+.caveats {
+  margin-top: 14px;
+}
+
+.caveat {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  background: rgba(227, 179, 65, 0.1);
+  border-left: 3px solid var(--flag);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.caveat .code {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--flag);
+  white-space: nowrap;
+}
+
+.caveat .months {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Data quality drill-down. Every logged issue is reachable, not one example
+   per group. A closed <details> keeps the summary table readable. */
+.drill {
+  margin-top: 6px;
+}
+
+.drill > summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.drill > summary::-webkit-details-marker {
+  display: none;
+}
+
+.drill > summary::before {
+  content: "▸ ";
+  color: var(--accent);
+}
+
+.drill[open] > summary::before {
+  content: "▾ ";
+}
+
+.drill > summary:hover {
+  color: var(--text);
+}
+
+.drill table {
+  margin: 8px 0 4px;
+  background: var(--panel-2);
+  border-radius: 6px;
+}
+
+.drill th,
+.drill td {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.drill td.ref {
+  font-family: ui-monospace, monospace;
+  white-space: nowrap;
+}
+
+/* AI category distribution. One row per category, so all 42 classifications
+   are visible instead of the psychosocial subset alone. */
+.cat-row {
+  display: grid;
+  grid-template-columns: 230px 1fr 36px;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.cat-row .name {
+  color: var(--text);
+}
+
+.cat-row .track {
+  background: var(--panel-2);
+  border-radius: 3px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.cat-row .fill {
+  display: block;
+  background: var(--scope2);
+  height: 100%;
+}
+
+.cat-row .count {
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .cat-row {
+    grid-template-columns: 1fr 36px;
+  }
+
+  .cat-row .track {
+    display: none;
+  }
+}
+
+/* A finding whose incident text changed after classification. */
+.badge.stale {
+  background: rgba(147, 161, 176, 0.18);
+  color: var(--muted);
+}
