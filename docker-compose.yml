@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16
+    container_name: ironbark-db
+    environment:
+      POSTGRES_USER: ironbark
+      POSTGRES_PASSWORD: ironbark
+      POSTGRES_DB: ironbark
+    ports:
+      - "5544:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ironbark -d ironbark"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
