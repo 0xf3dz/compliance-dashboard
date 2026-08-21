@@ -8,7 +8,7 @@ import IncidentsPanel from "./components/IncidentsPanel.vue";
 <template>
   <div class="app">
     <header class="app-header">
-      <h1>Ironbark Ridge Resources — ESG &amp; Compliance</h1>
+      <h1>Compliance Intelligence: Ironbark Ridge Resources</h1>
       <p>18 months of operational data (Jan 2025 – Jun 2026): emissions, safety, data quality.</p>
     </header>
 

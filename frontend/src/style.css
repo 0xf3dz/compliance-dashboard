@@ -66,6 +66,43 @@ body {
   font-size: 13px;
 }
 
+/* A panel is a details element, so the whole section folds under its heading.
+   The marker matches the .drill expanders inside the panels: the same glyph
+   means the same thing at both levels. Sections start collapsed, and
+   usePanelCollapse restores the state the reader left behind. */
+.panel > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.panel > summary::before {
+  content: "▸";
+  color: var(--accent);
+  margin-right: 8px;
+}
+
+.panel[open] > summary::before {
+  content: "▾";
+}
+
+.panel > summary h2 {
+  display: inline;
+}
+
+/* Inside the summary the subtitle loses its bottom margin, so a collapsed
+   panel holds no trailing space. The summary carries the gap when open. */
+.panel > summary .subtitle {
+  margin: 4px 0 0 18px;
+}
+
+.panel[open] > summary {
+  margin-bottom: 16px;
+}
+
 .kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

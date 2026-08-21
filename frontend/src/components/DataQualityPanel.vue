@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { api, type DataQualityReport } from "../api";
+import { usePanelCollapse } from "../usePanelCollapse";
 import { useResource } from "../useResource";
 
 const report = useResource<DataQualityReport>(api.dataQuality);
+
+const { open, persist } = usePanelCollapse("data-quality");
 </script>
 
 <template>
-  <section class="panel">
-    <h2>Data quality report</h2>
-    <p class="subtitle">
-      Every problem found in the source files, each fixed, flagged, or rejected — never
-      silently discarded. Open a group to read every row it holds.
-    </p>
+  <details class="panel" :open="open" @toggle="persist">
+    <summary>
+      <h2>Data quality report</h2>
+      <p class="subtitle">
+        Every problem found in the source files, each fixed, flagged, or rejected — never
+        silently discarded. Open a group to read every row it holds.
+      </p>
+    </summary>
 
     <div v-if="report.loading.value" class="state">Loading…</div>
     <div v-else-if="report.error.value" class="state error">
@@ -74,5 +79,5 @@ const report = useResource<DataQualityReport>(api.dataQuality);
         </table>
       </div>
     </template>
-  </section>
+  </details>
 </template>

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { api, type AiFinding } from "../api";
+import { usePanelCollapse } from "../usePanelCollapse";
 import { useResource } from "../useResource";
 
 const findings = useResource<AiFinding[]>(api.aiFindings);
+
+const { open, persist } = usePanelCollapse("ai-findings");
 
 interface Highlighted {
   before: string;
@@ -56,12 +59,14 @@ const recategorised = computed(() =>
 </script>
 
 <template>
-  <section class="panel">
-    <h2>AI incident findings</h2>
-    <p class="subtitle">
-      Claude classifies free-text descriptions and flags hidden psychosocial hazards and
-      severity mismatches. Every finding cites a verbatim quote from the source record.
-    </p>
+  <details class="panel" :open="open" @toggle="persist">
+    <summary>
+      <h2>AI incident findings</h2>
+      <p class="subtitle">
+        Claude classifies free-text descriptions and flags hidden psychosocial hazards and
+        severity mismatches. Every finding cites a verbatim quote from the source record.
+      </p>
+    </summary>
 
     <div v-if="findings.loading.value" class="state">Loading…</div>
     <div v-else-if="findings.error.value" class="state error">
@@ -137,5 +142,5 @@ const recategorised = computed(() =>
         <p class="rationale">{{ f.mismatch_detail ?? f.rationale }}</p>
       </div>
     </template>
-  </section>
+  </details>
 </template>

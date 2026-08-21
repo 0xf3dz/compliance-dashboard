@@ -3,9 +3,12 @@ import type { ChartData, ChartOptions } from "chart.js";
 import { computed } from "vue";
 import { Bar, Line } from "vue-chartjs";
 import { api, type IncidentSummary } from "../api";
+import { usePanelCollapse } from "../usePanelCollapse";
 import { useResource } from "../useResource";
 
 const summary = useResource<IncidentSummary>(api.incidentSummary);
+
+const { open, persist } = usePanelCollapse("incidents");
 
 const TYPE_LABELS: Record<string, string> = {
   VEH: "Vehicle / plant",
@@ -93,9 +96,11 @@ const barOptions: ChartOptions<"bar"> = {
 </script>
 
 <template>
-  <section class="panel">
-    <h2>Safety incidents</h2>
-    <p class="subtitle">Monthly trend and breakdowns by type and normalised severity.</p>
+  <details class="panel" :open="open" @toggle="persist">
+    <summary>
+      <h2>Safety incidents</h2>
+      <p class="subtitle">Monthly trend and breakdowns by type and normalised severity.</p>
+    </summary>
 
     <div v-if="summary.loading.value" class="state">Loading…</div>
     <div v-else-if="summary.error.value" class="state error">
@@ -130,5 +135,5 @@ const barOptions: ChartOptions<"bar"> = {
         </div>
       </div>
     </template>
-  </section>
+  </details>
 </template>

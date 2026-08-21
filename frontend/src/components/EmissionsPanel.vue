@@ -3,10 +3,13 @@ import type { ChartData, ChartOptions } from "chart.js";
 import { computed } from "vue";
 import { Chart } from "vue-chartjs";
 import { api, type EmissionsSummary, type MonthlyEmissions } from "../api";
+import { usePanelCollapse } from "../usePanelCollapse";
 import { useResource } from "../useResource";
 
 const monthly = useResource<MonthlyEmissions[]>(api.emissionsMonthly);
 const summary = useResource<EmissionsSummary>(api.emissionsSummary);
+
+const { open, persist } = usePanelCollapse("emissions");
 
 const SCOPE1 = "#f0883e";
 // The same orange at low saturation. A month without a fuel invoice keeps its
@@ -71,9 +74,11 @@ const chartOptions: ChartOptions<"bar" | "line"> = {
 </script>
 
 <template>
-  <section class="panel">
-    <h2>Emissions</h2>
-    <p class="subtitle">Monthly Scope 1 and Scope 2, computed from cleaned activity data.</p>
+  <details class="panel" :open="open" @toggle="persist">
+    <summary>
+      <h2>Emissions</h2>
+      <p class="subtitle">Monthly Scope 1 and Scope 2, computed from cleaned activity data.</p>
+    </summary>
 
     <div v-if="summary.loading.value" class="state">Loading…</div>
     <div v-else-if="summary.error.value" class="state error">
@@ -171,5 +176,5 @@ const chartOptions: ChartOptions<"bar" | "line"> = {
         </div>
       </div>
     </template>
-  </section>
+  </details>
 </template>
