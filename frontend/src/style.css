@@ -406,6 +406,68 @@ th {
   color: var(--muted);
 }
 
+.app-footer {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.app-footer__line {
+  margin: 0 0 6px;
+}
+
+.app-footer a {
+  color: var(--accent);
+}
+
+/* The request form sits inside a .drill expander, so it inherits the ▸/▾
+   marker. Grid rows keep the labels above their fields. */
+.request {
+  margin: 10px 0;
+}
+
+.request__form {
+  display: grid;
+  gap: 8px;
+  max-width: 420px;
+  margin: 8px 0 12px;
+}
+
+.request__form label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.request__form input,
+.request__form textarea {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  padding: 6px 8px;
+}
+
+.request__form button {
+  justify-self: start;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.request__form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 /* --- restatement exposure -------------------------------------------------
    The sized counterpart to .caveat. A caveat is amber because it warns. The
    reader reads a sized gap as a number. The figure gets the colour. The text

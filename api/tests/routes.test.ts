@@ -164,6 +164,13 @@ describe("GET /api/data-quality", () => {
     }
   });
 
+  it("reports when the data was ingested", async () => {
+    const res = await request(app).get("/api/data-quality/");
+    // The footer prints this stamp. A wrong date format renders as "Invalid
+    // Date" on the page, so the test parses it instead of trusting the type.
+    expect(Number.isNaN(Date.parse(res.body.ingested_at))).toBe(false);
+  });
+
   it("counts the same total three ways", async () => {
     const res = await request(app).get("/api/data-quality/");
     const files: { count: number; issue_types: { count: number }[] }[] = res.body.files;
@@ -189,5 +196,33 @@ describe("GET /api/data-quality", () => {
     ]) {
       expect(types).toContain(t);
     }
+  });
+});
+
+describe("POST /api/feature-requests", () => {
+  it("stores a complete request", async () => {
+    const res = await request(app).post("/api/feature-requests/").send({
+      name: "Test Reader",
+      email: "reader@example.com",
+      message: "A test request from the suite.",
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.id).toBeGreaterThan(0);
+    // The row is proof, not product data, so the test removes it again.
+    await pool.query("DELETE FROM feature_requests WHERE id = $1", [res.body.id]);
+  });
+
+  it("rejects a request without a message", async () => {
+    const res = await request(app)
+      .post("/api/feature-requests/")
+      .send({ name: "Test Reader", email: "reader@example.com" });
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects an invalid email", async () => {
+    const res = await request(app)
+      .post("/api/feature-requests/")
+      .send({ name: "Test Reader", email: "not-an-email", message: "Hi" });
+    expect(res.status).toBe(400);
   });
 });

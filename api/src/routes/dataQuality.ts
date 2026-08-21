@@ -31,11 +31,18 @@ interface FileGroup {
 
 dataQualityRouter.get("/", async (_req, res, next) => {
   try {
-    const rows = await query<IssueRow>(
-      "SELECT id, source_file, source_row, record_ref, issue_type, field," +
-        " raw_value, action, resolution, detail FROM data_quality_issues" +
-        " ORDER BY source_file, issue_type, id",
-    );
+    const [rows, stamp] = await Promise.all([
+      query<IssueRow>(
+        "SELECT id, source_file, source_row, record_ref, issue_type, field," +
+          " raw_value, action, resolution, detail FROM data_quality_issues" +
+          " ORDER BY source_file, issue_type, id",
+      ),
+      // The footer tells the reader when the data was loaded, so she can see
+      // whether a re-ingest has run since she sent a missing document.
+      query<{ ingested_at: Date | null }>(
+        "SELECT MAX(created_at) AS ingested_at FROM data_quality_issues",
+      ),
+    ]);
 
     const files: Record<string, FileGroup> = {};
     for (const r of rows) {
@@ -59,7 +66,11 @@ dataQualityRouter.get("/", async (_req, res, next) => {
       group.items.push(r);
     }
 
-    res.json({ total: rows.length, files: Object.values(files) });
+    res.json({
+      total: rows.length,
+      files: Object.values(files),
+      ingested_at: stamp[0]?.ingested_at ?? null,
+    });
   } catch (err) {
     next(err);
   }

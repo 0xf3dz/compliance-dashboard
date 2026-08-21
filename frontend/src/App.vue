@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AiFindingsPanel from "./components/AiFindingsPanel.vue";
+import AppFooter from "./components/AppFooter.vue";
 import DataQualityPanel from "./components/DataQualityPanel.vue";
 import EmissionsPanel from "./components/EmissionsPanel.vue";
 import IncidentsPanel from "./components/IncidentsPanel.vue";
@@ -16,5 +17,7 @@ import IncidentsPanel from "./components/IncidentsPanel.vue";
     <IncidentsPanel />
     <AiFindingsPanel />
     <DataQualityPanel />
+
+    <AppFooter />
   </div>
 </template>

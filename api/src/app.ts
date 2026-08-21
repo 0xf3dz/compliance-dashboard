@@ -10,6 +10,7 @@ import express, {
 } from "express";
 import { dataQualityRouter } from "./routes/dataQuality";
 import { emissionsRouter } from "./routes/emissions";
+import { featureRequestsRouter } from "./routes/featureRequests";
 import { incidentsRouter } from "./routes/incidents";
 
 export const app = express();
@@ -24,6 +25,7 @@ app.get("/health", (_req, res) => {
 app.use("/api/emissions", emissionsRouter);
 app.use("/api/incidents", incidentsRouter);
 app.use("/api/data-quality", dataQualityRouter);
+app.use("/api/feature-requests", featureRequestsRouter);
 
 // A route that throws sends the message to the client. The factor loader and
 // the fuel factor both throw on purpose, and a silent 500 would hide the one

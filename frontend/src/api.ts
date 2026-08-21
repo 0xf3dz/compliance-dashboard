@@ -131,6 +131,8 @@ export interface FileGroup {
 export interface DataQualityReport {
   total: number;
   files: FileGroup[];
+  /** When the pipeline last wrote the issues. Null only on an empty table. */
+  ingested_at: string | null;
 }
 
 async function getJson<T>(path: string): Promise<T> {
@@ -141,10 +143,30 @@ async function getJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`${path} failed: HTTP ${res.status}`);
+  }
+  return (await res.json()) as T;
+}
+
+export interface FeatureRequest {
+  name: string;
+  email: string;
+  message: string;
+}
+
 export const api = {
   emissionsMonthly: () => getJson<MonthlyEmissions[]>("/api/emissions/monthly"),
   emissionsSummary: () => getJson<EmissionsSummary>("/api/emissions/summary"),
   incidentSummary: () => getJson<IncidentSummary>("/api/incidents/summary"),
   aiFindings: () => getJson<AiFinding[]>("/api/incidents/ai-findings"),
   dataQuality: () => getJson<DataQualityReport>("/api/data-quality"),
+  requestFeature: (body: FeatureRequest) =>
+    postJson<{ id: number }>("/api/feature-requests", body),
 };
