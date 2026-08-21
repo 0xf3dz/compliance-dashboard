@@ -98,6 +98,60 @@ const chartOptions: ChartOptions<"bar" | "line"> = {
         </div>
       </div>
 
+      <!-- The reported figure beside what it may understate. The two numbers
+           answer one question: the left number is the one to report, the right
+           number is the work to do before the next report.
+
+           The server composes every figure, label, method note and action
+           sentence from data_quality_issues. This file holds no meter, month or
+           incident name, so a gap leaves this panel when the issue behind it
+           clears, in the same way as the caveats below. -->
+      <div v-if="summary.data.value.exposure.items.length" class="exposure">
+        <div class="exposure__figs">
+          <div class="exposure__fig">
+            <div class="label">Reported</div>
+            <div class="value">{{ tonnes(summary.data.value.total_kg) }} t</div>
+            <div class="sub">Report this figure.</div>
+          </div>
+          <div class="exposure__fig exposure__fig--gap">
+            <div class="label">Possibly missing</div>
+            <div class="value">+{{ tonnes(summary.data.value.exposure.kg_mid) }} t</div>
+            <div class="sub">
+              {{ Math.round(summary.data.value.exposure.share_of_reported * 1000) / 10 }}% of
+              the reported total · range +{{ tonnes(summary.data.value.exposure.kg_low) }} to
+              +{{ tonnes(summary.data.value.exposure.kg_high) }} t
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-for="item in summary.data.value.exposure.items"
+          :key="item.code"
+          class="gap"
+          :class="{ 'gap--none': item.kg_mid === 0 }"
+        >
+          <div class="gap__head">
+            <span class="gap__amount">{{
+              item.kg_mid > 0 ? `+${tonnes(item.kg_mid)} t` : "No gap"
+            }}</span>
+            <span class="gap__label">{{ item.label }}</span>
+            <span v-if="item.scope" class="badge">Scope {{ item.scope }}</span>
+          </div>
+          <div class="gap__action">
+            {{ item.action || "Do no work. The reading is correct." }}
+          </div>
+          <details class="drill">
+            <summary>Method and evidence</summary>
+            <p class="gap__note">{{ item.method_note }}</p>
+            <p class="gap__evidence">{{ item.evidence }}</p>
+            <p class="gap__meta">
+              {{ item.months.length }} month{{ item.months.length === 1 ? "" : "s" }}:
+              {{ item.months.join(", ") }} · method <code>{{ item.method }}</code>
+            </p>
+          </details>
+        </div>
+      </div>
+
       <div class="chart-wrap">
         <Chart type="bar" :data="chartData" :options="chartOptions" />
       </div>

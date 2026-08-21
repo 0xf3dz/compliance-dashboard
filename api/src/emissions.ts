@@ -34,7 +34,9 @@ export interface MonthlyEmissions {
   scope1_has_deliveries: boolean;
 }
 
-function monthKey(d: string | Date): string {
+/** "2025-05-10" or a Date -> "2025-05". Exported so exposure.ts cannot grow a
+   second, subtly different month formatter. */
+export function monthKey(d: string | Date): string {
   if (d instanceof Date) {
     const y = d.getUTCFullYear();
     const m = String(d.getUTCMonth() + 1).padStart(2, "0");

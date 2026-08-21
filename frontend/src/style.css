@@ -368,3 +368,105 @@ th {
   background: rgba(147, 161, 176, 0.18);
   color: var(--muted);
 }
+
+/* --- restatement exposure -------------------------------------------------
+   The sized counterpart to .caveat. A caveat is amber because it warns. The
+   reader reads a sized gap as a number. The figure gets the colour. The text
+   near it stays grey. */
+.exposure {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.exposure__figs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.exposure__fig .label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.exposure__fig .value {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.exposure__fig .sub {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+/* The gap figure is the only estimate on this panel, so it is the only number
+   in amber. The reported total beside it stays plain. */
+.exposure__fig--gap .value {
+  color: var(--flag);
+}
+
+.gap {
+  border-top: 1px solid var(--border);
+  padding: 10px 0 6px;
+}
+
+.gap__head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.gap__amount {
+  font-weight: 600;
+  color: var(--flag);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 96px;
+}
+
+.gap__label {
+  color: var(--text);
+}
+
+/* An explained movement is not a gap. It keeps its row so the reader can see
+   that the app told these two cases apart, but it must not look like a cost. */
+.gap--none .gap__amount {
+  color: var(--fixed);
+  font-weight: 500;
+}
+
+.gap__action {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.gap__note,
+.gap__evidence,
+.gap__meta {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.gap__evidence {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.gap__meta code {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--accent);
+}

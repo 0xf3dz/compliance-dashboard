@@ -20,6 +20,36 @@ export interface Caveat {
   months: string[];
 }
 
+/**
+ * One sized gap in the reported figure.
+ *
+ * The server composes every field, and also the wording. The panel prints the
+ * fields. A gap that clears in the database clears on screen, and you do not
+ * edit the frontend.
+ */
+export interface ExposureItem {
+  code: string;
+  label: string;
+  scope: 1 | 2 | null;
+  method: string;
+  method_note: string;
+  kg_low: number;
+  kg_mid: number;
+  kg_high: number;
+  months: string[];
+  evidence: string;
+  /** The document that closes the gap. Empty when nothing is missing. */
+  action: string;
+}
+
+export interface ExposureReport {
+  items: ExposureItem[];
+  kg_low: number;
+  kg_mid: number;
+  kg_high: number;
+  share_of_reported: number;
+}
+
 export interface EmissionsSummary {
   months: number;
   scope1_kg: number;
@@ -31,6 +61,8 @@ export interface EmissionsSummary {
   scope1_share: number;
   scope2_share: number;
   caveats: Caveat[];
+  /** What the reported figure may be understating, sized and ranked. */
+  exposure: ExposureReport;
 }
 
 export interface Count {

@@ -7,6 +7,14 @@ import {
   type MonthlyEmissions,
 } from "../emissions";
 import { loadFactors } from "../factors";
+import {
+  buildExposure,
+  estimateMissingMonth,
+  estimateUnitScale,
+  explainedAnomaly,
+  type ExposureReport,
+  type MeterReading,
+} from "../exposure";
 
 export const emissionsRouter = Router();
 
@@ -91,6 +99,64 @@ async function caveats(): Promise<Caveat[]> {
   return out;
 }
 
+/**
+ * The sized counterpart to caveats(): the same three issue types, priced.
+ *
+ * caveats() says a figure is a lower bound. This says by how much, so the
+ * reader can rank the gaps instead of only knowing they exist. Both are built
+ * from data_quality_issues, so a sized gap leaves the dashboard when the issue
+ * behind it clears, and neither names a month, meter or incident in code.
+ */
+async function exposure(
+  rows: MonthlyEmissions[],
+  reportedKg: number,
+): Promise<ExposureReport> {
+  const [factors, readings, issues] = await Promise.all([
+    loadFactors(),
+    // Every reading of any meter that carries a flag. The unflagged months come
+    // back too, because they are the baseline the estimator reconciles against.
+    query<MeterReading>(
+      "SELECT meter_id, period::text AS period, consumption_kwh, is_flagged" +
+        " FROM electricity_readings WHERE meter_id IN" +
+        " (SELECT meter_id FROM electricity_readings WHERE is_flagged)",
+    ),
+    query<IssueRow>(
+      "SELECT issue_type, record_ref, detail FROM data_quality_issues" +
+        " WHERE issue_type = ANY($1) ORDER BY issue_type, record_ref",
+      [CAVEAT_CODES],
+    ),
+  ]);
+
+  const monthsByCode = new Map<string, string[]>();
+  for (const code of CAVEAT_CODES) {
+    monthsByCode.set(
+      code,
+      sortedUnique(
+        issues
+          .filter((r) => r.issue_type === code)
+          .map((r) => /\d{4}-\d{2}/.exec(r.record_ref ?? "")?.[0] ?? "")
+          .filter(Boolean),
+      ),
+    );
+  }
+
+  const anomalies = issues.filter((r) => r.issue_type === "expected_anomaly");
+
+  return buildExposure(
+    [
+      estimateUnitScale(readings, factors.electricity),
+      estimateMissingMonth(rows, monthsByCode.get("missing_fuel_month") ?? []),
+      anomalies.length > 0
+        ? explainedAnomaly(
+            monthsByCode.get("expected_anomaly") ?? [],
+            sortedUnique(anomalies.map((r) => r.detail ?? "")).join(" "),
+          )
+        : null,
+    ],
+    reportedKg,
+  );
+}
+
 emissionsRouter.get("/monthly", async (_req, res, next) => {
   try {
     res.json(await monthly());
@@ -120,6 +186,7 @@ emissionsRouter.get("/summary", async (_req, res, next) => {
       scope1_share: total > 0 ? Math.round((scope1 / total) * 1000) / 1000 : 0,
       scope2_share: total > 0 ? Math.round((scope2 / total) * 1000) / 1000 : 0,
       caveats: notes,
+      exposure: await exposure(rows, total),
     });
   } catch (err) {
     next(err);
