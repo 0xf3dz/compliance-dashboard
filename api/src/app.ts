@@ -2,6 +2,10 @@
 // tests/routes.test.ts imports this object, so the integration test drives the
 // real routes without a live port and without a spare process to clean up.
 
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import cors from "cors";
 import express, {
   type NextFunction,
@@ -26,6 +30,22 @@ app.use("/api/emissions", emissionsRouter);
 app.use("/api/incidents", incidentsRouter);
 app.use("/api/data-quality", dataQualityRouter);
 app.use("/api/feature-requests", featureRequestsRouter);
+
+// In the deployed build the API also serves the compiled frontend, so the whole
+// app answers on one origin and runs as one Railway service. frontend/dist only
+// exists after a frontend build, so this block is skipped in dev and tests,
+// where the frontend runs on its own port.
+const frontendDist = fileURLToPath(
+  new URL("../../frontend/dist", import.meta.url),
+);
+if (existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  // Deep links fall back to index.html. /api and /health are matched above, so
+  // the single-page app never shadows them.
+  app.get(/^(?!\/(?:api|health)).*/, (_req, res) => {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+}
 
 // A route that throws sends the message to the client. The factor loader and
 // the fuel factor both throw on purpose, and a silent 500 would hide the one
