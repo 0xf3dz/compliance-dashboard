@@ -1,6 +1,10 @@
 // Typed fetch wrappers to the Ironbark API.
-
-const BASE = "http://localhost:3000";
+//
+// BASE is empty in the deployed build, where the API serves this frontend from
+// the same origin, so the browser calls /api/... on the current host. In local
+// dev the frontend runs on :5173 and the API on :3000, so the fallback points
+// there. Set VITE_API_BASE at build time to override.
+const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
 
 export interface MonthlyEmissions {
   month: string;
